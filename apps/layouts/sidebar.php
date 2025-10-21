@@ -155,7 +155,7 @@ function any_active(array $files, string $current): bool {
             ?>
             <li class="sidebar-item">
               <a class="sidebar-link <?= $repOpen ? '' : 'collapsed' ?>" data-bs-toggle="collapse" data-bs-target="#menu-reports">
-                <i class="fa-solid fa-chart-pie me-2"></i> <span>Reports</span>
+                <i class="fa-solid fa-chart-pie"></i> <span>Reports</span>
               </a>
               <ul id="menu-reports" class="sidebar-dropdown list-unstyled collapse <?= $repOpen ? 'show' : '' ?>" data-bs-parent="#sidebar">
                 <li class="sidebar-item">
