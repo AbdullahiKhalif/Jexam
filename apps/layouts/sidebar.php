@@ -1,0 +1,206 @@
+<?php
+// layouts/sidebar.php
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+/* Role helpers */
+$role = strtoupper(trim($_SESSION['role'] ?? ''));
+$isOfficer = in_array($role, ['OFFICER','EXAM OFFICER','ADMIN'], true);
+$fullName = $_SESSION['full_name'] ?? 'User';
+
+/* Active helpers */
+$path    = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+$current = strtolower(basename($path ?: ''));
+
+function is_active(string $file, string $current): string {
+  return strtolower($file) === $current ? 'active' : '';
+}
+function any_active(array $files, string $current): bool {
+  $current = strtolower($current);
+  foreach ($files as $f) if (strtolower($f) === $current) return true;
+  return false;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <title>Exam Allocation</title>
+
+    <link rel="shortcut icon" href="../../assets/img/favicon.ico"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com/"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link class="js-stylesheet" href="../../assets/css/light.css" rel="stylesheet"/>
+  </head>
+
+  <body data-theme="default" data-layout="fluid" data-sidebar-position="left" data-sidebar-behavior="sticky">
+    <div class="wrapper">
+      <!-- Sidebar -->
+      <nav id="sidebar" class="sidebar">
+        <div class="sidebar-content js-simplebar">
+
+          <!-- Brand -->
+          <div class="d-flex align-items-center justify-content-center py-3">
+            <img src="../../assets/img/logo.png" alt="Logo" style="height:40px"/>
+            <div class="ms-2 lh-sm text-center">
+              <div class="fw-bold text-white" style="font-size:14px;">JAMHURIYA UNIVERSITY</div>
+              <div class="fw-bold" style="font-size:12px; color:#4BBF73;">OF Science &amp; Technology</div>
+            </div>
+          </div>
+
+         
+
+          <ul class="sidebar-nav">
+
+            <!-- Dashboard -->
+            <li class="sidebar-item <?= is_active('dashboard.php', $current) ?>">
+              <a class="sidebar-link" href="../views/dashboard.php">
+                <i class="fa-solid fa-gauge-high me-2"></i> <span>Dashboard</span>
+              </a>
+            </li>
+
+            <!-- Setup: Academic structure -->
+            <?php
+            $setupFiles = ['users.php','academic.php','semesters.php','terms.php','campuses.php','shifts.php','departments.php'];
+            $setupOpen  = any_active($setupFiles, $current) ? 'show' : '';
+            ?>
+            <li class="sidebar-item">
+              <a class="sidebar-link <?= $setupOpen ? '' : 'collapsed' ?>" data-bs-toggle="collapse" data-bs-target="#menu-setup">
+                <i class="fa-solid fa-sitemap me-2"></i> <span>Academic Setup</span>
+                <span class="badge badge-sidebar-primary">Core</span>
+              </a>
+              <ul id="menu-setup" class="sidebar-dropdown list-unstyled collapse <?= $setupOpen ? 'show' : '' ?>" data-bs-parent="#sidebar">
+                <li class="sidebar-item <?= is_active('academic.php',$current) ?>">
+                  <a class="sidebar-link" href="../views/academic.php">
+                    Academic Years / Active Terms
+                  </a>
+                </li>
+                <li class="sidebar-item <?= is_active('semesters.php',$current) ?>">
+                  <a class="sidebar-link" href="../views/semesters.php">Semesters</a>
+                </li>
+                <li class="sidebar-item <?= is_active('terms.php',$current) ?>">
+                  <a class="sidebar-link" href="../views/terms.php">Terms</a>
+                </li>
+                <li class="sidebar-item <?= is_active('campuses.php',$current) ?>">
+                  <a class="sidebar-link" href="../views/campuses.php">Campuses</a>
+                </li>
+                <li class="sidebar-item <?= is_active('shifts.php',$current) ?>">
+                  <a class="sidebar-link" href="../views/shifts.php">Shifts</a>
+                </li>
+
+                <li class="sidebar-item <?= is_active('departments.php',$current) ?>">
+                  <a class="sidebar-link" href="../views/departments.php">
+                    Departments &amp; Rules
+                  </a>
+                </li>
+                <li class="sidebar-item <?= is_active('users.php',$current) ?>">
+                  <a class="sidebar-link" href="../views/users.php">
+                    User Management
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Classes & Subjects -->
+            <?php
+            $csFiles = ['subjects.php','classes.php','academic.php']; // academic.php hosts classes-periodic in your app
+            $csOpen  = any_active($csFiles, $current) ? 'show' : '';
+            ?>
+            <li class="sidebar-item">
+              <a class="sidebar-link <?= $csOpen ? '' : 'collapsed' ?>" data-bs-toggle="collapse" data-bs-target="#menu-cs">
+                 <i class="fa-solid fa-chair me-2"></i> <span>Halls &amp; Availability</span>
+              </a>
+              <ul id="menu-cs" class="sidebar-dropdown list-unstyled collapse <?= $csOpen ? 'show' : '' ?>" data-bs-parent="#sidebar">
+                <li class="sidebar-item <?= is_active('hall.php',$current) ?>">
+                  <a class="sidebar-link" href="../views/halls_periodic.php">Halls</a>
+                </li>
+                
+              </ul>
+            </li>
+
+            <!-- Halls & Availability -->
+           
+
+            <!-- Uploads -->
+            <?php
+            $upFiles = ['upload.php','allocations_upload.php','upload_periodic.php', 'subject_upload'];
+            $upOpen  = any_active($upFiles, $current) ? 'show' : '';
+            ?>
+            <li class="sidebar-item">
+              <a class="sidebar-link <?= $upOpen ? '' : 'collapsed' ?>" data-bs-toggle="collapse" data-bs-target="#menu-upload">
+                <i class="fa-solid fa-file-arrow-up me-2"></i> <span>Uploads</span>
+              </a>
+              <ul id="menu-upload" class="sidebar-dropdown list-unstyled collapse <?= $upOpen ? 'show' : '' ?>" data-bs-parent="#sidebar">
+                
+                <li class="sidebar-item <?= is_active('allocations_upload.php',$current) ?>">
+                  <a class="sidebar-link" href="../views/allocations_upload.php">
+                    Upload Allocations
+                  </a>
+                </li>
+                <li class="sidebar-item <?= is_active('subject_upload.php',$current) ?>">
+                  <a class="sidebar-link" href="../views/subject_upload.php">
+                    Upload Subjects
+                  </a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Reports -->
+            <?php
+            $repFiles = ['reports.php'];
+            $repOpen  = any_active($repFiles, $current) ? 'show' : '';
+            ?>
+            <li class="sidebar-item">
+              <a class="sidebar-link <?= $repOpen ? '' : 'collapsed' ?>" data-bs-toggle="collapse" data-bs-target="#menu-reports">
+                <i class="fa-solid fa-chart-pie me-2"></i> <span>Reports</span>
+              </a>
+              <ul id="menu-reports" class="sidebar-dropdown list-unstyled collapse <?= $repOpen ? 'show' : '' ?>" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+  <a class="sidebar-link" href="../views/reports_allocation.php">
+    <i class="fa-solid fa-clipb me-2"></i> <span>Exam Allocation Report</span>
+  </a>
+</li>
+
+<li class="sidebar-item">
+  <a class="sidebar-link" href="../views/report_subjects_assigned.php">
+    <i class="fa-solid fa-lecturer me-2"></i> <span>Report Subject Assigned</span>
+  </a>
+</li>
+
+<li class="sidebar-item">
+  <a class="sidebar-link" href="../views/report_halls_open.php">
+    <i class="fa-solid fa-hom me-2"></i> <span>Report Halls Open</span>
+  </a>
+</li>
+              </ul>
+            </li>
+
+            <!-- Officer-only: user management (optional) -->
+            <?php if ($isOfficer): ?>
+              <?php
+              $adminFiles = ['users.php','faculties.php'];
+              $adminOpen  = any_active($adminFiles, $current) ? 'show' : '';
+              ?>
+              <li class="sidebar-item">
+                <a class="sidebar-link <?= $adminOpen ? '' : 'collapsed' ?>" data-bs-toggle="collapse" data-bs-target="#menu-admin">
+                  <i class="fa-solid fa-user-shield me-2"></i> <span>Administration</span>
+                  <span class="badge badge-sidebar-secondary">Officer</span>
+                </a>
+                <ul id="menu-admin" class="sidebar-dropdown list-unstyled collapse <?= $adminOpen ? 'show' : '' ?>" data-bs-parent="#sidebar">
+                  <li class="sidebar-item <?= is_active('users.php',$current) ?>">
+                    <a class="sidebar-link" href="../views/users.php">Users</a>
+                  </li>
+                  <li class="sidebar-item <?= is_active('faculties.php',$current) ?>">
+                    <a class="sidebar-link" href="../views/faculties.php">Faculties</a>
+                  </li>
+                </ul>
+              </li>
+            <?php endif; ?>
+
+          </ul>
+        </div>
+      </nav>
+      <!-- /Sidebar -->

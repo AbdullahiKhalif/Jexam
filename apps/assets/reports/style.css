@@ -1,0 +1,244 @@
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2c3e50;
+  --accent-color: #e74c3c;
+  --success-color: #2ecc71;
+  --light-color: #ecf0f1;
+  --dark-color: #34495e;
+}
+
+body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--dark-color);
+  padding-bottom: 50px;
+}
+
+.header {
+  background: linear-gradient(
+    to right,
+    var(--secondary-color),
+    var(--primary-color)
+  );
+  color: white;
+  padding: 40px 0;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.upload-container {
+  background-color: white;
+  border-radius: 15px;
+  padding: 40px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.exam-details-form {
+  border: 1px solid #e0e0e0;
+  padding: 2rem;
+  border-radius: 15px;
+  background-color: #fcfdff;
+}
+
+.btn-primary {
+  background: linear-gradient(to right, var(--primary-color), #2980b9);
+  border: none;
+  padding: 12px 30px;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(to right, #2980b9, var(--primary-color));
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+}
+
+.upload-area {
+  border: 3px dashed #3498db;
+  border-radius: 15px;
+  padding: 40px 30px;
+  text-align: center;
+  background-color: rgba(52, 152, 219, 0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-bottom: 25px;
+}
+
+.upload-area:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+  border-color: #2980b9;
+}
+
+.upload-area.dragover {
+  background-color: rgba(46, 204, 113, 0.15);
+  border-color: #27ae60;
+  transform: scale(1.01);
+}
+
+.upload-icon {
+  font-size: 48px;
+  color: #3498db;
+  margin-bottom: 20px;
+  transition: transform 0.3s ease;
+}
+
+.upload-area:hover .upload-icon {
+  transform: scale(1.1);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-weight: 600;
+  margin-top: 15px;
+  font-size: 1.1rem;
+}
+
+.badge-waiting {
+  background-color: #f39c12;
+  color: white;
+}
+
+.badge-success {
+  background-color: #2ecc71;
+  color: white;
+  box-shadow: 0 3px 10px rgba(46, 204, 113, 0.3);
+}
+
+.badge-error {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 50px;
+  color: #7f8c8d;
+  font-size: 1rem;
+}
+
+.results-section {
+  display: none;
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loading {
+  display: none;
+  text-align: center;
+  padding: 30px;
+}
+
+.spinner {
+  border: 5px solid rgba(52, 152, 219, 0.2);
+  border-top: 5px solid var(--primary-color);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-details {
+  background-color: #fdeded;
+  border-left: 5px solid #e74c3c;
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 10px;
+  display: none;
+}
+
+.file-preview {
+  margin-top: 20px;
+  font-weight: 600;
+  color: var(--primary-color);
+  word-break: break-all;
+}
+
+/* New Allocation Card Styles */
+.allocation-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  background: white;
+}
+.allocation-header-image {
+  width: 100%;
+  display: block;
+}
+.allocation-details {
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+.allocation-details .row > div {
+  padding: 0.5rem;
+}
+.allocation-details strong {
+  font-weight: 700;
+  margin-right: 0.5rem;
+}
+.hall-number-box {
+  border: 2px solid black;
+  padding: 0px;
+  font-weight: 700;
+  display: inline-block;
+  border-radius: 10px;
+  width: 130px;;
+}
+.allocation-table-container {
+  padding: 0 1.5rem 1.5rem;
+}
+.allocation-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.allocation-table th,
+.allocation-table td {
+  border: 2px solid black;
+  padding: 5px;
+  text-align: left;
+}
+.allocation-table th {
+  font-weight: 700;
+}
+.allocation-table tr:last-child {
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 2rem;
+  }
+  .upload-container {
+    padding: 20px;
+  }
+}
+
+/* PRINT — each hall per page, no default margins/padding */
+/* PRINT — each hall per page, no default margins/padding */
+/* PRINT — each hall per page, A5 landscape orientation */
+
