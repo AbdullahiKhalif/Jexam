@@ -28,7 +28,7 @@ $(function () {
       function (r) {
         if (r.status) {
           // Redirect after successful login
-          window.location.replace('../views/terms.php');
+          window.location.replace('../views/dashboard.php');
         } else {
           showError(r.data || "Login failed");
         }

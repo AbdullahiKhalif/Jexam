@@ -3,10 +3,23 @@
 // ini_set('display_errors',1); error_reporting(E_ALL);
 include '../layouts/sidebar.php';
 include '../layouts/header.php';
+
+if (session_status() === PHP_SESSION_NONE) session_start();
+$role = strtoupper(trim($_SESSION['role'] ?? ''));
+$isSuperAdmin = ($role === 'SUPPER-ADMIN');
 ?>
 <main class="content">
 
 <div class="container-fluid p-0">
+
+  <?php if (!$isSuperAdmin): ?>
+    <!-- Hide 5th column (Action) for non SUPPER-ADMIN users -->
+    <style>
+      #tblHallAvail th:nth-child(5),
+      #tblHallAvail td:nth-child(5) { display: none !important; }
+    </style>
+  <?php endif; ?>
+
   <div class="card mb-3">
     <div class="card-body row g-2 align-items-end">
       <div class="col-md-4">
@@ -31,8 +44,10 @@ include '../layouts/header.php';
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <div class="fw-semibold">Halls availability for this period</div>
-      <!-- NEW: Add Hall button -->
-      <button class="btn btn-primary btn-sm" id="btnAddHall">Add Hall</button>
+      <!-- Add Hall button only for SUPPER-ADMIN -->
+      <?php if ($isSuperAdmin): ?>
+        <button class="btn btn-primary btn-sm" id="btnAddHall">Add Hall</button>
+      <?php endif; ?>
     </div>
     <div class="card-body">
       <table id="tblHallAvail" class="table table-striped table-bordered">
@@ -42,7 +57,12 @@ include '../layouts/header.php';
             <th>Hall</th>
             <th>Capacity</th>
             <th>Status (this period)</th>
-            <th>Action</th>
+            <?php if ($isSuperAdmin): ?>
+              <th id="thAction">Action</th>
+            <?php else: ?>
+              <!-- keep structure: hidden via CSS above -->
+              <th id="thAction">Action</th>
+            <?php endif; ?>
           </tr>
         </thead>
         <tbody><!-- filled by JS --></tbody>
@@ -51,7 +71,8 @@ include '../layouts/header.php';
   </div>
 </div>
 
-<!-- NEW: Hall Modal -->
+<!-- Hall Modal (only rendered for SUPPER-ADMIN to avoid accidental usage) -->
+<?php if ($isSuperAdmin): ?>
 <div class="modal fade" id="mdlHall" tabindex="-1">
   <div class="modal-dialog">
     <form id="frmHall" class="modal-content">
@@ -86,6 +107,7 @@ include '../layouts/header.php';
     </form>
   </div>
 </div>
+<?php endif; ?>
 
 </main>
 <?php include '../layouts/footer.php'; ?>
@@ -93,5 +115,9 @@ include '../layouts/header.php';
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<script src="../js/halls_periodic.js"></script>
+<script>
+// Expose a flag to JS if needed (so your halls_periodic.js can also skip rendering action buttons)
+window.IS_SUPPER_ADMIN = <?= $isSuperAdmin ? 'true' : 'false' ?>;
+</script>
 
+<script src="../js/halls_periodic.js"></script>

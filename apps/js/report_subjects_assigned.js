@@ -169,6 +169,7 @@ $(function () {
              @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap');
     body{
         font-family: 'Poppins', sans-serif;
+        background-color: #fff !important; 
     }
     table{
         width: 100%;
@@ -232,7 +233,7 @@ $(function () {
 
     if (!depts.length) {
       $blocks.html(
-        '<div class="text-muted">No subjects found for the selected filters.</div>'
+        '<div class="text-muted text-center">No subjects found for the selected filters.</div>'
       );
       return;
     }
