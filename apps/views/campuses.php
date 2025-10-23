@@ -12,7 +12,7 @@ include '../layouts/header.php';
       </div>
       <div class="card-body">
         <table class="table table-striped" id="tblCampus">
-          <thead><tr><th>#</th><th>Name</th><th>Code</th><th style="width:120px">Actions</th></tr></thead>
+          <thead><tr><th>#</th><th>Name</th><th>Code</th> <th>Campus Cordinatores</th><th style="width:120px">Actions</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -31,6 +31,7 @@ include '../layouts/header.php';
         <input type="hidden" id="campus_id">
         <div class="mb-2"><label class="form-label">Name</label><input class="form-control" id="campus_name" required></div>
         <div class="mb-2"><label class="form-label">Code</label><input class="form-control" id="campus_code" required></div>
+        <div class="mb-2"><label class="form-label">Campus Cordinatores</label><input class="form-control" id="leaders" required></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>

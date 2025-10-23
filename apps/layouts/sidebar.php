@@ -137,7 +137,7 @@ function any_active(array $files, string $current): bool {
 
             <!-- Reports (everyone) -->
             <?php
-            $repFiles = ['reports_allocation.php','report_subjects_assigned.php','report_halls_open.php'];
+            $repFiles = ['reports_allocation.php','report_subjects_assigned.php','report_halls_open.php', 'report_subject_halls.php'];
             $repOpen  = any_active($repFiles, $current) ? 'show' : '';
             ?>
             <li class="sidebar-item">
@@ -152,7 +152,12 @@ function any_active(array $files, string $current): bool {
                 </li>
                 <li class="sidebar-item <?= is_active('report_subjects_assigned.php',$current) ?>">
                   <a class="sidebar-link" href="../views/report_subjects_assigned.php">
-                    <i class="fa-solid fa-bo me-2"></i> <span>Report Subject Assigned</span>
+                    <i class="fa-solid fa-bo me-2"></i> <span>Exam Subject Assigned</span>
+                  </a>
+                </li>
+                <li class="sidebar-item <?= is_active('report_subject_halls.php',$current) ?>">
+                  <a class="sidebar-link" href="../views/report_subject_halls.php">
+                    <i class="fa-solid fa-bo me-2"></i> <span>Subject Assigned by Hall</span>
                   </a>
                 </li>
                 <li class="sidebar-item <?= is_active('report_halls_open.php',$current) ?>">

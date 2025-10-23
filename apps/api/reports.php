@@ -172,31 +172,49 @@ if($action==='allocationByCampus'){
 }
 
 /* 2) Allocation by DATE (with subjects; strict by date+shift; prevent prefix bleed) */
-if($action==='allocationByDate'){
-  $year_id =(int)($REQ['academic_year_id']??0);
-  $sem_id  =(int)($REQ['semester_id']??0);
-  $term_id =(int)($REQ['term_id']??0);
-  $campus_id=(int)($REQ['campus_id']??0);
-  $shift_id=(int)($REQ['shift_id']??0);
-  $exam_date=trim($REQ['exam_date']??'');
-  if(!$year_id||!$sem_id||!$term_id||!$campus_id||!$shift_id||$exam_date==='') out(false,'Missing selectors');
+if ($action === 'allocationByDate') {
+  $year_id   = (int)($REQ['academic_year_id'] ?? 0);
+  $sem_id    = (int)($REQ['semester_id'] ?? 0);
+  $term_id   = (int)($REQ['term_id'] ?? 0);
+  $campus_id = (int)($REQ['campus_id'] ?? 0);
+  $shift_id  = (int)($REQ['shift_id'] ?? 0);
+  $exam_date = trim($REQ['exam_date'] ?? '');
 
-  if(!shift_in_campus_and_allowed($conn,$shift_id,$campus_id)) out(false,'Selected shift is not allowed for this campus.');
+  if (!$year_id || !$sem_id || !$term_id || !$campus_id || !$shift_id || $exam_date === '') {
+    out(false, 'Missing selectors');
+  }
 
-  $meta=[
-    'campus'=>fetch_label($conn,"SELECT name FROM campus WHERE id=?","i",$campus_id),
-    'year'=>fetch_label($conn,"SELECT name FROM academic_year WHERE id=?","i",$year_id),
-    'semester'=>fetch_label($conn,"SELECT name FROM semester WHERE id=?","i",$sem_id),
-    'term'=>fetch_label($conn,"SELECT name FROM term WHERE id=?","i",$term_id),
-    'shift'=>null,'date'=>$exam_date,'day_label'=>null
+  if (!shift_in_campus_and_allowed($conn, $shift_id, $campus_id)) {
+    out(false, 'Selected shift is not allowed for this campus.');
+  }
+
+  // ---- meta (now includes campus leaders) ----
+  $meta = [
+    'campus'         => fetch_label($conn, "SELECT name FROM campus WHERE id = ?",   "i", $campus_id),
+    'campus_leaders' => fetch_label($conn, "SELECT leaders FROM campus WHERE id = ?", "i", $campus_id), // ✨ added
+    'year'           => fetch_label($conn, "SELECT name FROM academic_year WHERE id = ?", "i", $year_id),
+    'semester'       => fetch_label($conn, "SELECT name FROM semester WHERE id = ?",      "i", $sem_id),
+    'term'           => fetch_label($conn, "SELECT name FROM term WHERE id = ?",          "i", $term_id),
+    'shift'          => null,
+    'date'           => $exam_date,
+    'day_label'      => null
   ];
-  $st=$conn->prepare("SELECT name,DATE_FORMAT(start_time,'%h:%i %p'),DATE_FORMAT(end_time,'%h:%i %p') FROM shift WHERE id=?");
-  $st->bind_param("i",$shift_id); $st->execute(); $st->bind_result($sn,$s1,$s2);
-  if($st->fetch()) $meta['shift']=['name'=>$sn,'start_time'=>$s1,'end_time'=>$s2]; $st->close();
-  [$ts,$te]=get_term_window($conn,$term_id);
-  $meta['day_label']=weekday_occurrence_label($exam_date,$ts,$te);
 
-  if(!table_exists($conn,'class_hall_allocation')) out(false,'No allocation table found (class_hall_allocation)');
+  $st = $conn->prepare("SELECT name, DATE_FORMAT(start_time,'%h:%i %p'), DATE_FORMAT(end_time,'%h:%i %p') FROM shift WHERE id = ?");
+  $st->bind_param("i", $shift_id);
+  $st->execute();
+  $st->bind_result($sn, $s1, $s2);
+  if ($st->fetch()) {
+    $meta['shift'] = ['name' => $sn, 'start_time' => $s1, 'end_time' => $s2];
+  }
+  $st->close();
+
+  [$ts, $te] = get_term_window($conn, $term_id);
+  $meta['day_label'] = weekday_occurrence_label($exam_date, $ts, $te);
+
+  if (!table_exists($conn, 'class_hall_allocation')) {
+    out(false, 'No allocation table found (class_hall_allocation)');
+  }
 
   $sql = "
     WITH dedup_alloc AS (
@@ -210,11 +228,9 @@ if($action==='allocationByDate'){
         AND a.term_id          = ?
         AND a.shift_id         = ?
       GROUP BY a.hall_id, a.class_id, a.academic_year_id, a.semester_id, a.term_id, a.shift_id
-      HAVING SUM(a.allocated_students) > 0     -- ✨ exclude zero/NULL sums early
+      HAVING SUM(a.allocated_students) > 0
     ),
     best_event AS (
-      /* latest exam_event by id for SAME class+y/s/t/shift+date
-         and ensure subject belongs to the same department as the class */
       SELECT
         ev.class_id, ev.academic_year_id, ev.semester_id, ev.term_id, ev.shift_id, ev.exam_date,
         MAX(ev.id) AS best_id
@@ -242,33 +258,33 @@ if($action==='allocationByDate'){
       h.name AS hall_name,
       h.capacity,
       c.code AS class_code,
-      COALESCE(s.subject_name, '')   AS subject_name,
-      COALESCE(s.level,'Specific')   AS subject_type,   -- ← read `level` as `subject_type`
-      ev.exam_date                   AS assigned_date,
-      da.allocated_students          AS students
+      COALESCE(s.subject_name, '') AS subject_name,
+      COALESCE(s.level,'Specific') AS subject_type,
+      ev.exam_date                 AS assigned_date,
+      da.allocated_students        AS students
     FROM dedup_alloc da
     JOIN hall h    ON h.id = da.hall_id
     JOIN `class` c ON c.id = da.class_id
     LEFT JOIN exam_event ev
-          ON ev.id = (
-            SELECT be.best_id
-            FROM best_event be
-            WHERE be.class_id         = da.class_id
-              AND be.academic_year_id = da.academic_year_id
-              AND be.semester_id      = da.semester_id
-              AND be.term_id          = da.term_id
-              AND be.shift_id         = da.shift_id
-          )
+      ON ev.id = (
+        SELECT be.best_id
+        FROM best_event be
+        WHERE be.class_id         = da.class_id
+          AND be.academic_year_id = da.academic_year_id
+          AND be.semester_id      = da.semester_id
+          AND be.term_id          = da.term_id
+          AND be.shift_id         = da.shift_id
+      )
     LEFT JOIN subject s ON s.id = ev.subject_id
     WHERE h.campus_id = ?
-      AND da.allocated_students > 0             -- ✨ double-guard
+      AND da.allocated_students > 0
     ORDER BY h.name, c.code, subject_name
   ";
 
   $st = $conn->prepare($sql);
   if (!$st) out(false, 'prepare error: ' . $conn->error);
 
-  // bind: alloc (year, sem, term, shift) + best_event (year, sem, term, shift, date) + campus
+  // bind: alloc (4) + best_event (4 + date) + campus (1) = 10 params
   $st->bind_param(
     "iiiiiiiisi",
     $year_id, $sem_id, $term_id, $shift_id,
@@ -291,7 +307,7 @@ if($action==='allocationByDate'){
         'rows'      => []
       ];
     }
-    $stud = (int)($r['students'] ?? 0); // >0 guaranteed by SQL
+    $stud = (int)($r['students'] ?? 0);
     $halls[$hid]['rows'][] = [
       'class_code'    => $r['class_code'],
       'subject_name'  => $r['subject_name'],
@@ -301,14 +317,13 @@ if($action==='allocationByDate'){
     ];
     $halls[$hid]['total'] += $stud;
   }
-  // ✨ only halls with content
+
+  // only halls with content
   $halls = array_values(array_filter($halls, fn($h) => !empty($h['rows'])));
 
   out(true, ['meta' => $meta, 'halls' => $halls]);
-
-
-
 }
+
 
   /* ---------- OPEN HALLS (by campus+shift over a period) ---------- */
 /* Input:

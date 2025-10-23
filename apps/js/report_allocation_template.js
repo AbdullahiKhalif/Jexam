@@ -214,6 +214,8 @@ $(function () {
     const shiftTime = meta.shift
       ? [meta.shift.start_time, meta.shift.end_time].filter(Boolean).join(" - ")
       : "";
+
+    const CAMPUS_LEADERS = meta.campus_leaders;
     halls.forEach((h) => {
       const total = (h.rows || []).reduce((s, r) => s + (r.students || 0), 0);
       const hallNo =
@@ -300,6 +302,12 @@ $(function () {
               </tr>
             </tbody>
           </table>
+
+          <div class="leaders mt-3">
+          <h1 class="text-center fs-2" style="font-size: 20px; margin-top: 10px;">Contact Exam Officers: ${
+            meta.campus_leaders || "Campus"
+          }</h4>
+          <div>
         </div>
 
       </div>
@@ -446,6 +454,10 @@ $(function () {
       .allocation-details .d-flex {
         display: flex;
         justify-content: space-between;
+      }
+      .leaders{
+        font-size: 32px !important;
+        margin-top: 10px !important;
       }
     </style>
   `;
