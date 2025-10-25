@@ -39,7 +39,7 @@ if ($action === 'list') {
 // List semesters (for dropdowns)
 if ($action === 'listSemesters') {
   $res=$conn->query("SELECT s.id, s.name, s.is_active, y.name AS year_name
-                     FROM semester s JOIN academic_year y ON y.id=s.academic_year_id
+                     FROM semester s JOIN academic_year y ON y.id=s.academic_year_id where s.is_active = 1
                      ORDER BY y.name DESC, s.id ASC");
   $rows=[]; while($r=$res->fetch_assoc()) $rows[]=$r; out(true,$rows);
 }
