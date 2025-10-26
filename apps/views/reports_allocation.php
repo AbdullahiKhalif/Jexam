@@ -9,7 +9,7 @@ include '../layouts/header.php';
   <div class="container-fluid p-0">
 
     <!-- header bar -->
-    <div class="header print-hide rounded rounded bg-secondary m-2 p-3" style="border-radius:8px;">
+    <div class="header bg-secondary m-2 p-3 print-hide" style="border-radius:8px;">
       <div class="container">
         <h1 class="mb-0 text-white">Exam Allocation Report</h1>
         <div class="text-white-50">Select Year/Semester/Term, Campus, Shift and Date, then generate printable cards.</div>

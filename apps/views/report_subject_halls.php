@@ -8,7 +8,7 @@ include '../layouts/header.php';
 <main class="content">
   <div class="container-fluid p-0">
 
-    <div class="header print-hide">
+    <div class="header bg-secondary m-2 p-3 print-hide" style="border-radius:8px;">
       <div class="container">
         <h1 class="mb-0 text-white"><i class="fa-solid fa-book-open me-2"></i>Subject → Classes & Halls</h1>
         <div class="text-white-50">Pick period & location; subjects auto-load for that campus & shift.</div>
