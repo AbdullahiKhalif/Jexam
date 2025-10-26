@@ -1,5 +1,6 @@
 <?php
 // apps/views/allocations_upload.php
+include '../layouts/protectedPage.php';
 include '../layouts/sidebar.php';
 include '../layouts/header.php';
 ?>

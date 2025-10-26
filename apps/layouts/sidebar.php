@@ -3,8 +3,8 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 /* Role helpers */
-$role = strtoupper(trim($_SESSION['role'] ?? ''));
-$isSuperAdmin = ($role === 'SUPPER-ADMIN');           // ← only this role sees Setup & Uploads
+$role         = strtoupper(trim($_SESSION['role'] ?? ''));
+$isSuperAdmin = ($role === 'SUPPER-ADMIN');                 // only this role sees Setup & Uploads
 $isOfficer    = in_array($role, ['SUPPER-ADMIN','ADMIN'], true);
 $fullName     = $_SESSION['full_name'] ?? 'User';
 
@@ -19,6 +19,16 @@ function any_active(array $files, string $current): bool {
   $current = strtolower($current);
   foreach ($files as $f) if (strtolower($f) === $current) return true;
   return false;
+}
+
+/* 🔒 Hard redirect for non–SUPPER-ADMIN if they type restricted URLs */
+$setupFiles = ['users.php','academic.php','semesters.php','terms.php','campuses.php','shifts.php','departments.php'];
+$upFiles    = ['upload.php','allocations_upload.php','upload_periodic.php','subject_upload.php'];
+$restricted = array_map('strtolower', array_merge($setupFiles, $upFiles));
+
+if (!$isSuperAdmin && in_array($current, $restricted, true)) {
+  header("Location: ../views/dashboard.php");
+  exit;
 }
 ?>
 <!DOCTYPE html>
@@ -75,26 +85,38 @@ function any_active(array $files, string $current): bool {
                 <ul id="menu-setup" class="sidebar-dropdown list-unstyled collapse <?= $setupOpen ? 'show' : '' ?>" data-bs-parent="#sidebar" style="margin-left: -15px;">
                   <li class="sidebar-item <?= is_active('academic.php',$current) ?>">
                     <a class="sidebar-link" href="../views/academic.php">
-                      Academic Years / Active Terms
+                      <i class="fa-solid fa-calendar-days me-2"></i> Academic Years + Terms
                     </a>
                   </li>
                   <li class="sidebar-item <?= is_active('semesters.php',$current) ?>">
-                    <a class="sidebar-link" href="../views/semesters.php">Semesters</a>
+                    <a class="sidebar-link" href="../views/semesters.php">
+                      <i class="fa-solid fa-layer-group me-2"></i> Semesters
+                    </a>
                   </li>
                   <li class="sidebar-item <?= is_active('terms.php',$current) ?>">
-                    <a class="sidebar-link" href="../views/terms.php">Terms</a>
+                    <a class="sidebar-link" href="../views/terms.php">
+                      <i class="fa-solid fa-bookmark me-2"></i> Terms
+                    </a>
                   </li>
                   <li class="sidebar-item <?= is_active('campuses.php',$current) ?>">
-                    <a class="sidebar-link" href="../views/campuses.php">Campuses</a>
+                    <a class="sidebar-link" href="../views/campuses.php">
+                      <i class="fa-solid fa-building-columns me-2"></i> Campuses
+                    </a>
                   </li>
                   <li class="sidebar-item <?= is_active('shifts.php',$current) ?>">
-                    <a class="sidebar-link" href="../views/shifts.php">Shifts</a>
+                    <a class="sidebar-link" href="../views/shifts.php">
+                      <i class="fa-solid fa-clock me-2"></i> Shifts
+                    </a>
                   </li>
                   <li class="sidebar-item <?= is_active('departments.php',$current) ?>">
-                    <a class="sidebar-link" href="../views/departments.php">Departments &amp; Rules</a>
+                    <a class="sidebar-link" href="../views/departments.php">
+                      <i class="fa-solid fa-sitemap me-2"></i> Departments &amp; Rules
+                    </a>
                   </li>
                   <li class="sidebar-item <?= is_active('users.php',$current) ?>">
-                    <a class="sidebar-link" href="../views/users.php">User Management</a>
+                    <a class="sidebar-link" href="../views/users.php">
+                      <i class="fa-solid fa-user-gear me-2"></i> User Management
+                    </a>
                   </li>
                 </ul>
               </li>
@@ -110,11 +132,15 @@ function any_active(array $files, string $current): bool {
                 </a>
                 <ul id="menu-upload" class="sidebar-dropdown list-unstyled collapse <?= $upOpen ? 'show' : '' ?>" data-bs-parent="#sidebar" style="margin-left: -15px;">
                   <li class="sidebar-item <?= is_active('allocations_upload.php',$current) ?>">
-                    <a class="sidebar-link" href="../views/allocations_upload.php">Upload Allocations</a>
-                  </li>
-                  <li class="sidebar-item <?= is_active('subject_upload.php',$current) ?>">
-                    <a class="sidebar-link" href="../views/subject_upload.php">Upload Subjects</a>
-                  </li>
+                  <a class="sidebar-link" href="../views/allocations_upload.php">
+                    <i class="fa-solid fa-file-arrow-up me-2"></i> Upload Allocations
+                  </a>
+                </li>
+                <li class="sidebar-item <?= is_active('subject_upload.php',$current) ?>">
+                  <a class="sidebar-link" href="../views/subject_upload.php">
+                    <i class="fa-solid fa-upload me-2"></i> Upload Subjects
+                  </a>
+                </li>
                 </ul>
               </li>
             <?php endif; ?>
@@ -130,14 +156,16 @@ function any_active(array $files, string $current): bool {
               </a>
               <ul id="menu-cs" class="sidebar-dropdown list-unstyled collapse <?= $csOpen ? 'show' : '' ?>" data-bs-parent="#sidebar" style="margin-left: -10px;">
                 <li class="sidebar-item <?= is_active('halls_periodic.php',$current) ?>">
-                  <a class="sidebar-link" href="../views/halls_periodic.php">Halls</a>
-                </li>
+                <a class="sidebar-link" href="../views/halls_periodic.php">
+                  <i class="fa-solid fa-chair me-2"></i> Halls
+                </a>
+              </li>
               </ul>
             </li>
 
             <!-- Reports (everyone) -->
             <?php
-            $repFiles = ['reports_allocation.php','report_subjects_assigned.php','report_halls_open.php', 'report_subject_halls.php'];
+            $repFiles = ['reports_allocation.php','report_subjects_assigned.php','report_halls_open.php','report_subject_halls.php'];
             $repOpen  = any_active($repFiles, $current) ? 'show' : '';
             ?>
             <li class="sidebar-item">
@@ -147,22 +175,22 @@ function any_active(array $files, string $current): bool {
               <ul id="menu-reports" class="sidebar-dropdown list-unstyled collapse <?= $repOpen ? 'show' : '' ?>" data-bs-parent="#sidebar" style="margin-left: -25px;">
                 <li class="sidebar-item <?= is_active('reports_allocation.php',$current) ?>">
                   <a class="sidebar-link" href="../views/reports_allocation.php">
-                    <i class="fa-solid fa-clipboa me-2"></i> <span>Exam Allocation Report</span>
+                    <i class="fa-solid fa-clipboard me-2"></i> <span>Exam Allocation Report</span>
                   </a>
                 </li>
                 <li class="sidebar-item <?= is_active('report_subjects_assigned.php',$current) ?>">
                   <a class="sidebar-link" href="../views/report_subjects_assigned.php">
-                    <i class="fa-solid fa-bo me-2"></i> <span>Exam Subject Assigned</span>
+                    <i class="fa-solid fa-book me-2"></i> <span>Exam Subject Assigned</span>
                   </a>
                 </li>
                 <li class="sidebar-item <?= is_active('report_subject_halls.php',$current) ?>">
                   <a class="sidebar-link" href="../views/report_subject_halls.php">
-                    <i class="fa-solid fa-bo me-2"></i> <span>Subject Assigned by Hall</span>
+                    <i class="fa-solid fa-door-open me-2"></i> <span>Subject Assigned by Hall</span>
                   </a>
                 </li>
                 <li class="sidebar-item <?= is_active('report_halls_open.php',$current) ?>">
                   <a class="sidebar-link" href="../views/report_halls_open.php">
-                    <i class="fa-solid  me-2"></i> <span>Report Halls Open</span>
+                    <i class="fa-solid fa-door-closed me-2"></i> <span>Report Halls Open</span>
                   </a>
                 </li>
               </ul>
@@ -174,6 +202,7 @@ function any_active(array $files, string $current): bool {
               $adminFiles = ['users.php'];
               $adminOpen  = any_active($adminFiles, $current) ? 'show' : '';
               ?>
+              <!-- (Add items here if you later want officer-only submenus) -->
             <?php endif; ?>
 
           </ul>

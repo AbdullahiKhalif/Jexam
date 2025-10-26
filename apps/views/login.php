@@ -16,7 +16,7 @@ session_unset();
 	<meta name="description" content="Responsive Bootstrap 5 Admin &amp; Dashboard Template">
 	<meta name="author" content="Bootlab">
 
-	<title>Log In | Basketball &amp;</title>
+	<title>Login - JExams</title>
 
 	<link rel="canonical" href="pages-sign-in-2.html" />
 	<link rel="shortcut icon" href="../..//assets/img/favicon.ico">
@@ -50,7 +50,7 @@ session_unset();
 										<div class="row">
 											
 											<div class="text-center">
-											<i class="fa fa-unlock display-6 text-primary mb-4" aria-hidden="true"></i>
+											<i class="fa fa-unlock display-6 text-light bg-primary mb-4 p-2 rounded" aria-hidden="true"></i>
 											<h1>Login</h1>
 											</div>
 											<form id="loginForm">
@@ -64,7 +64,7 @@ session_unset();
 												<label class="form-label">Password</label>
 												<input class="form-control form-control-lg" type="password" name="password" placeholder="Enter your password" id="password"/>
 												<small>
-												<a href='#'>Forgot password?</a>
+												
 											</small>
 											</div>
 											<div>

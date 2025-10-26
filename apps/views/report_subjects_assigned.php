@@ -1,5 +1,6 @@
 <?php
 // apps/views/report_subjects_assigned.php
+include '../layouts/protectedPage.php';
 include '../layouts/sidebar.php';
 include '../layouts/header.php';
 ?>

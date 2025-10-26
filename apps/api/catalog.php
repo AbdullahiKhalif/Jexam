@@ -7,7 +7,7 @@ $action = $_POST['action'] ?? '';
 function out($ok,$data){ echo json_encode(["status"=>$ok,"data"=>$data]); exit; }
 
 if ($action==='listCampuses') {
-  $res=$conn->query("SELECT id,name,code FROM campus ORDER BY name");
+  $res=$conn->query("SELECT id,name,code FROM campus where is_available = 1 ORDER BY name");
   $rows=[]; while($r=$res->fetch_assoc()) $rows[]=$r; out(true,$rows);
 }
 if ($action==='listShifts') {

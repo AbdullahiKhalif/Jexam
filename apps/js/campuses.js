@@ -8,22 +8,14 @@ $(function () {
 
   // helpers for safe rendering
   const escHtml = (s) =>
-    String(s ?? "").replace(/[&<>"']/g, (m) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[m]));
+    String(s ?? "").replace(/[&<>"']/g, (m) => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]
+    ));
 
   const escAttr = (s) =>
-    String(s ?? "").replace(/["'&<>]/g, (m) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[m]));
+    String(s ?? "").replace(/["'&<>]/g, (m) => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]
+    ));
 
   function load() {
     $tb.html("");
@@ -31,13 +23,17 @@ $(function () {
       "../api/campus.php",
       { action: "list" },
       function (resp) {
-        if (!resp?.status || !Array.isArray(resp.data)) return;
+        if (!resp?.status || !Array.isArray(resp.data) || resp.data.length === 0) {
+          $tb.append('<tr><td colspan="6" class="text-muted">No campuses</td></tr>');
+          return;
+        }
 
         resp.data.forEach((c, idx) => {
           const id = c.id;
           const nm = c.name ?? "";
           const cd = c.code ?? "";
           const ld = c.leaders ?? "";
+          const av = Number(c.is_available) === 1; // open?
 
           $tb.append(
             `<tr>
@@ -46,15 +42,33 @@ $(function () {
               <td>${escHtml(cd)}</td>
               <td>${escHtml(ld)}</td>
               <td>
+                ${
+                  av
+                    ? '<span class="badge bg-success">Available</span>'
+                    : '<span class="badge bg-secondary">Closed</span>'
+                }
+              </td>
+              <td>
                 <div class="btn-group btn-group-sm">
+                  <button class="btn btn-toggle"
+                          title="${av ? "Close campus" : "Open campus"}"
+                          data-id="${escAttr(id)}"
+                          data-val="${av ? 0 : 1}">
+                    ${
+                      av
+                        ? "<i class='fa fa-unlock p-2 bg-success rounded text-light fs-6'></i>"
+                        : "<i class='fa fa-lock p-2 bg-secondary rounded text-light fs-6'></i>"
+                    }
+                  </button>
                   <button class="btn btn-edit"
+                          title="Edit"
                           data-id="${escAttr(id)}"
                           data-name="${escAttr(nm)}"
                           data-code="${escAttr(cd)}"
                           data-leaders="${escAttr(ld)}">
                     <i class="fa fa-edit p-2 bg-primary rounded text-light fs-6"></i>
                   </button>
-                  <button class="btn btn-del" data-id="${escAttr(id)}">
+                  <button class="btn btn-del" title="Delete" data-id="${escAttr(id)}">
                     <i class="fa fa-trash p-2 bg-danger rounded text-light fs-6"></i>
                   </button>
                 </div>
@@ -64,9 +78,12 @@ $(function () {
         });
       },
       "json"
-    );
+    ).fail(() => {
+      $tb.html('<tr><td colspan="6" class="text-danger">Failed to load</td></tr>');
+    });
   }
 
+  // Add Campus
   $("#btnAddCampus").on("click", () => {
     $id.val("");
     $name.val("");
@@ -75,6 +92,7 @@ $(function () {
     $mdl.modal("show");
   });
 
+  // Edit Campus (populate modal)
   $tb.on("click", ".btn-edit", function () {
     // primary path: from data-* attributes
     const did = $(this).data("id");
@@ -94,6 +112,7 @@ $(function () {
     $mdl.modal("show");
   });
 
+  // Create/Update submit
   $("#frmCampus").on("submit", function (e) {
     e.preventDefault();
     const payload =
@@ -127,6 +146,7 @@ $(function () {
     );
   });
 
+  // Delete Campus
   $tb.on("click", ".btn-del", function () {
     const id = $(this).data("id");
     Swal.fire({
@@ -148,6 +168,24 @@ $(function () {
         "json"
       );
     });
+  });
+
+  // Toggle Availability (Open/Close)
+  $tb.on("click", ".btn-toggle", function () {
+    const id = $(this).data("id");
+    const is_available = $(this).data("val"); // 0 or 1
+    $.post(
+      "../api/campus.php",
+      { action: "toggle", id, is_available },
+      function (resp) {
+        if (resp?.status) {
+          load();
+        } else {
+          Swal.fire("Error", resp?.data || "Toggle failed", "error");
+        }
+      },
+      "json"
+    );
   });
 
   load();

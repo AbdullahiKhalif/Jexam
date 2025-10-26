@@ -1,6 +1,7 @@
 <?php
 // apps/views/academic.php
 // ini_set('display_errors',1); error_reporting(E_ALL);
+include '../layouts/protectedPage.php';
 include '../layouts/sidebar.php';
 include '../layouts/header.php';
 

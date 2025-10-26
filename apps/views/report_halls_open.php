@@ -1,5 +1,6 @@
 <?php
 // apps/views/report_halls_open.php
+include '../layouts/protectedPage.php';
 include '../layouts/sidebar.php';
 include '../layouts/header.php';
 ?>
@@ -102,6 +103,6 @@ include '../layouts/header.php';
 
 <?php include '../layouts/footer.php'; ?>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../js/report_halls_open.js?v=1"></script>

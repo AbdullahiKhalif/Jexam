@@ -1,4 +1,5 @@
 <?php
+include '../layouts/protectedPage.php';
 include '../layouts/sidebar.php';
 include '../layouts/header.php';
 ?>

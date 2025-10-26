@@ -14,7 +14,7 @@ $action = $_POST['action'] ?? '';
 
 // -------------- list: all campuses --------------
 if ($action === 'list') {
-  $sql = "SELECT id, name, code, leaders FROM campus ORDER BY name";
+  $sql = "SELECT id, name, code, leaders, is_available FROM campus ORDER BY name";
   if (!$res = $conn->query($sql)) {
     out(false, 'Failed to fetch campuses');
   }
@@ -58,6 +58,25 @@ if ($action === 'update') {
   $st->bind_param("sssi", $name, $code, $leaders, $id);
   if (!$st->execute()) out(false, 'Update failed');
   if ($st->affected_rows === 0) out(true, 'No changes');
+  out(true, 'Updated');
+}
+
+// -------------- toggle: open/close campus --------------
+if ($action === 'toggle') {
+  $id = (int)($_POST['id'] ?? 0);
+  // expect 0 or 1
+  $is_available = isset($_POST['is_available']) ? (int)$_POST['is_available'] : -1;
+
+  if (!$id || ($is_available !== 0 && $is_available !== 1)) {
+    out(false, 'id and is_available (0|1) are required');
+  }
+
+  $st = $conn->prepare("UPDATE campus SET is_available = ? WHERE id = ?");
+  if (!$st) out(false, 'Prepare failed');
+  $st->bind_param("ii", $is_available, $id);
+  if (!$st->execute()) out(false, 'Toggle failed');
+
+  // Note: affected_rows can be 0 if same value; still OK.
   out(true, 'Updated');
 }
 

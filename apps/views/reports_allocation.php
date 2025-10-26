@@ -1,5 +1,6 @@
 <?php
 // apps/views/reports_allocation.php
+include '../layouts/protectedPage.php';
 include '../layouts/sidebar.php';
 include '../layouts/header.php';
 ?>
@@ -68,6 +69,7 @@ include '../layouts/header.php';
 </main>
 <?php include '../layouts/footer.php'; ?>
 
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../js/report_allocation_template.js?v=2"></script>

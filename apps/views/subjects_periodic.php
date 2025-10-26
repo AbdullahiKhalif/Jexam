@@ -3,7 +3,7 @@
 // apps/views/subjects_periodic.php
 // ini_set('display_errors',1); error_reporting(E_ALL);
 
-#include '../layouts/protectedPage.php';
+include '../layouts/protectedPage.php';
 include '../layouts/sidebar.php';
 include '../layouts/header.php';
 ?>
