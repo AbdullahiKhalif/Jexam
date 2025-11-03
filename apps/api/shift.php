@@ -1,36 +1,80 @@
 <?php
-// api/shift.php
-include '../config/conn.php';
 header('Content-Type: application/json');
-function out($ok,$data){ echo json_encode(["status"=>$ok,"data"=>$data]); exit; }
-$action=$_POST['action']??'';
+require_once __DIR__ . '/../config/conn.php';
+ini_set('display_errors','0');
+ini_set('log_errors','1');
 
-if($action==='list'){
-  $campus_id=(int)($_POST['campus_id']??0);
-  $res=$conn->query("SELECT id,name,start_time,end_time,is_enabled FROM shift WHERE campus_id=$campus_id ORDER BY id");
-  $rows=[]; while($r=$res->fetch_assoc()) $rows[]=$r; out(true,$rows);
+function out($ok,$data){ echo json_encode(['status'=>$ok,'data'=>$data], JSON_UNESCAPED_UNICODE); exit; }
+
+if ($_SERVER['REQUEST_METHOD']!=='POST' || !isset($_POST['action'])) out(false, 'Action required');
+$action = $_POST['action'];
+
+/* === LIST === */
+if ($action==='list') {
+  $sql = "SELECT id, name, start_time, end_time, is_enabled FROM shift ORDER BY start_time";
+  $res = $conn->query($sql);
+  if (!$res) out(false, 'Query failed: '.$conn->error);
+
+  $rows = [];
+  while ($r = $res->fetch_assoc()) $rows[] = $r;
+  out(true, $rows);
 }
-if($action==='create'){
-  $campus_id=(int)($_POST['campus_id']??0);
-  $name=trim($_POST['name']??''); $start=$_POST['start_time']??null; $end=$_POST['end_time']??null;
-  if(!$campus_id||$name==='') out(false,'campus_id and name required');
-  $st=$conn->prepare("INSERT INTO shift(campus_id,name,start_time,end_time,is_enabled) VALUES(?,?,?,?,1)");
-  $st->bind_param("isss",$campus_id,$name,$start,$end); $st->execute(); out(true,'Created');
+
+/* === CREATE === */
+if ($action==='create') {
+  $name  = trim($_POST['name'] ?? '');
+  $start = $_POST['start_time'] ?? null;
+  $end   = $_POST['end_time'] ?? null;
+  if ($name==='') out(false,'Name required');
+
+  if(!$st=$conn->prepare("INSERT INTO shift(name,start_time,end_time,is_enabled) VALUES(?,?,?,1)"))
+    out(false,'prepare failed: '.$conn->error);
+  $st->bind_param("sss",$name,$start,$end);
+  if(!$st->execute()) out(false,'execute failed: '.$st->error);
+  $st->close();
+  out(true,'Created');
 }
-if($action==='update'){
-  $id=(int)($_POST['id']??0); $name=trim($_POST['name']??''); $start=$_POST['start_time']??null; $end=$_POST['end_time']??null;
-  if(!$id||$name==='') out(false,'id and name required');
-  $st=$conn->prepare("UPDATE shift SET name=?, start_time=?, end_time=? WHERE id=?");
-  $st->bind_param("sssi",$name,$start,$end,$id); $st->execute(); out(true,'Updated');
+
+/* === UPDATE === */
+if ($action==='update') {
+  $id = (int)($_POST['id'] ?? 0);
+  $name  = trim($_POST['name'] ?? '');
+  $start = $_POST['start_time'] ?? null;
+  $end   = $_POST['end_time'] ?? null;
+  if(!$id || $name==='') out(false,'Missing data');
+
+  if(!$st=$conn->prepare("UPDATE shift SET name=?, start_time=?, end_time=? WHERE id=?"))
+    out(false,'prepare failed: '.$conn->error);
+  $st->bind_param("sssi",$name,$start,$end,$id);
+  if(!$st->execute()) out(false,'execute failed: '.$st->error);
+  $st->close();
+  out(true,'Updated');
 }
-if($action==='toggle'){
-  $id=(int)($_POST['id']??0); $enabled=(int)($_POST['is_enabled']??1);
-  $st=$conn->prepare("UPDATE shift SET is_enabled=? WHERE id=?");
-  $st->bind_param("ii",$enabled,$id); $st->execute(); out(true,'Toggled');
+
+/* === TOGGLE === */
+if ($action==='toggle') {
+  $id = (int)($_POST['id'] ?? 0);
+  $val = (int)($_POST['is_enabled'] ?? 0);
+  if(!$id) out(false,'Invalid ID');
+
+  if(!$st=$conn->prepare("UPDATE shift SET is_enabled=? WHERE id=?"))
+    out(false,'prepare failed: '.$conn->error);
+  $st->bind_param("ii",$val,$id);
+  if(!$st->execute()) out(false,'execute failed: '.$st->error);
+  $st->close();
+  out(true,'Updated');
 }
-if($action==='delete'){
-  $id=(int)($_POST['id']??0);
-  $conn->query("DELETE FROM shift WHERE id=$id");
+
+/* === DELETE === */
+if ($action==='delete') {
+  $id = (int)($_POST['id'] ?? 0);
+  if(!$id) out(false,'Invalid ID');
+
+  if(!$st=$conn->prepare("DELETE FROM shift WHERE id=?"))
+    out(false,'prepare failed: '.$conn->error);
+  $st->bind_param("i",$id);
+  if(!$st->execute()) out(false,'execute failed: '.$st->error);
+  $st->close();
   out(true,'Deleted');
 }
 

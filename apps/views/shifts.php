@@ -6,12 +6,11 @@ include '../layouts/header.php';
 <main class="content">
   <div class="container-fluid p-0">
     <div class="card mt-3">
-      <div class="card-header d-flex justify-content-between">
+      <div class="card-header d-flex justify-content-end">
         <div class="d-flex align-items-center gap-2">
-          <h4 class="mb-0">Shifts</h4>
-          <select id="campus_sel" class="form-select form-select-sm" style="width:auto"></select>
+           <button class="btn btn-primary" id="btnAddShift">Add Shift</button>
         </div>
-        <button class="btn btn-primary" id="btnAddShift">Add Shift</button>
+       
       </div>
       <div class="card-body">
         <table class="table table-striped" id="tblShift">

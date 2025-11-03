@@ -123,6 +123,40 @@ $created=0; $updated=0; $sizes=0; $allocs=0;
 
 $conn->begin_transaction();
 try {
+
+  /* ============================================================
+     PRE-CLEAR: Remove any existing allocations for these filters
+     (campus + year + sem + term + shift) BEFORE importing new.
+     ============================================================ */
+  // Delete allocations tied to halls of the campus for this period+shift
+  if (!$delAlloc = $conn->prepare(
+    "DELETE a FROM class_hall_allocation a
+     INNER JOIN hall h ON h.id = a.hall_id
+     WHERE a.academic_year_id = ?
+       AND a.semester_id      = ?
+       AND a.term_id          = ?
+       AND a.shift_id         = ?
+       AND h.campus_id        = ?"
+  )) throw new Exception('prepare(delAlloc) failed: '.$conn->error);
+  $delAlloc->bind_param("iiiii", $year_id, $sem_id, $term_id, $shift_id, $campus_id);
+  $delAlloc->execute();
+  $delAlloc->close();
+
+  // Also remove hall availability rows for the same scope (optional but consistent)
+  if (!$delAvail = $conn->prepare(
+    "DELETE ha FROM hall_shift_availability ha
+     INNER JOIN hall h ON h.id = ha.hall_id
+     WHERE ha.academic_year_id = ?
+       AND ha.semester_id      = ?
+       AND ha.term_id          = ?
+       AND ha.shift_id         = ?
+       AND h.campus_id         = ?"
+  )) throw new Exception('prepare(delAvail) failed: '.$conn->error);
+  $delAvail->bind_param("iiiii", $year_id, $sem_id, $term_id, $shift_id, $campus_id);
+  $delAvail->execute();
+  $delAvail->close();
+  /* ======================= end pre-clear ======================= */
+
   foreach (xlsx_stream_rows($xlsxPath) as $row) {
     // trim tail empties
     for($i=count($row)-1; $i>=0 && trim((string)$row[$i])===''; $i--) unset($row[$i]);

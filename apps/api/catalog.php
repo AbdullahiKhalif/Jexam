@@ -11,8 +11,7 @@ if ($action==='listCampuses') {
   $rows=[]; while($r=$res->fetch_assoc()) $rows[]=$r; out(true,$rows);
 }
 if ($action==='listShifts') {
-  $campus_id = (int)($_POST['campus_id'] ?? 0);
-  $res=$conn->query("SELECT id,name FROM shift WHERE campus_id=$campus_id AND is_enabled=1 ORDER BY id");
+  $res=$conn->query("SELECT id,name FROM shift WHERE is_enabled=1 ORDER BY id");
   $rows=[]; while($r=$res->fetch_assoc()) $rows[]=$r; out(true,$rows);
 }
 

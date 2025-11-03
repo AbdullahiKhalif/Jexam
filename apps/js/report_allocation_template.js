@@ -1,5 +1,6 @@
 // apps/js/report_allocation_template.js
 $(function () {
+  
   const $pair = $("#yearsem"),
     $term = $("#term"),
     $campus = $("#campus"),
@@ -19,6 +20,7 @@ $(function () {
   let yearId = null,
     semId = null;
   let headerImg = "";
+
   function normalizeSubjectType(v) {
     const t = String(v || "")
       .toLowerCase()
@@ -105,6 +107,7 @@ $(function () {
       "json"
     );
   }
+
   function loadCampuses() {
     $.post(
       "../api/catalog.php",
@@ -115,37 +118,49 @@ $(function () {
             ? r.data.map((c) => `<option value="${c.id}">${c.name}</option>`)
             : '<option value="">--</option>'
         );
-        loadShifts();
+        loadShifts(); // load global shifts after campuses
       },
       "json"
     );
   }
+
+  /* ======== SHIFT LOGIC (updated: independent from campus) ======== */
   function loadShifts() {
+    const prev = $shift.val(); // try to preserve selection on reload
     $.post(
-      "../api/catalog.php",
-      { action: "listShifts", campus_id: $campus.val() },
+      "../api/reports.php",
+      { action: "listShiftsByCampus" }, // campus ignored server-side; returns all enabled shifts
       (r) => {
-        $shift.html(
-          r?.status
-            ? r.data.map((s) => `<option value="${s.id}">${s.name}</option>`)
-            : '<option value="">--</option>'
-        );
+        if (r?.status && Array.isArray(r.data) && r.data.length) {
+          $shift.html(
+            r.data
+              .map((s) => `<option value="${s.id}">${s.name}</option>`)
+              .join("")
+          );
+          if (prev && $shift.find(`option[value="${prev}"]`).length) {
+            $shift.val(prev);
+          }
+        } else {
+          $shift.html('<option value="">--</option>');
+        }
       },
       "json"
     );
   }
+  // We can still reload shifts when campus changes (it will list the same global set)
   $campus.on("change", loadShifts);
 
   // Generate
   $btn.on("click", () => {
+
     const payload = {
-      action: "allocationByDate", // ← use date-aware endpoint
+      action: "allocationByDate", // date-aware endpoint
       academic_year_id: yearId,
       semester_id: semId,
       term_id: $term.val(),
       campus_id: $campus.val(),
       shift_id: $shift.val(),
-      exam_date: $date.val(), // ← send date
+      exam_date: $date.val(),
     };
     if (
       !payload.academic_year_id ||
@@ -215,7 +230,6 @@ $(function () {
       ? [meta.shift.start_time, meta.shift.end_time].filter(Boolean).join(" - ")
       : "";
 
-    const CAMPUS_LEADERS = meta.campus_leaders;
     halls.forEach((h) => {
       const total = (h.rows || []).reduce((s, r) => s + (r.students || 0), 0);
       const hallNo =
@@ -298,171 +312,41 @@ $(function () {
               <tr style="font-family:'Times New Roman', Times, serif; font-weight:bold; font-size:19px;">
                 <td style="text-align:right;">Total</td>
                 <td style="text-align:center;">${total}</td>
-                
               </tr>
             </tbody>
           </table>
 
           <div class="leaders mt-3">
-          <h1 class="text-center fs-2" style="font-size: 20px; margin-top: 10px;">Contact Exam Officers: ${
-            meta.campus_leaders || "Campus"
-          }</h4>
-          <div>
+            <h1 class="text-center fs-2" style="font-size: 20px; margin-top: 10px;">Contact Exam Officers: ${
+              meta.campus_leaders || "Campus"
+            }</h1>
+          </div>
         </div>
 
       </div>
     </div>
   </center>`;
       $cards.append(card);
-      $btnPrint.on("click", function () {
-        // Add a print style for A5 landscape if needed
-        const printWindow = window.open("", "");
 
-        // Create a custom print stylesheet if needed
+      $btnPrint.on("click", function () {
+        const printWindow = window.open("", "");
         const printStyle = `
     <style>
-      /* Print styles for A5 landscape */
-      @page {
-        size: A5 landscape;
-        margin: 0;
-      }
-
-      /* Global body styles */
-      body {
-        font-family: 'Arial', sans-serif;
-        margin: 0;
-        padding: 0;
-      }
-
-      /* Ensure full width for content */
-      .results-section,
-      .row,
-      [class^="col-"],
-      [class*=" col-"] {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-
-      /* Hall allocation card styles */
-      .allocation-card {
-        margin: 0 !important;
-        padding: 0 !important;
-        break-inside: avoid;
-        break-after: page;
-        page-break-inside: avoid;
-        page-break-after: always;
-        border: none;
-      }
-
-      .allocation-card:last-of-type {
-        break-after: auto;
-        page-break-after: auto;
-      }
-
-      /* Ensure header image fits within A5 */
-      .allocation-header-image {
-        display: block;
-        width: 100% !important;
-        height: 20vh !important;
-        margin: 0 !important;
-      }
-
-      /* General allocation details styling */
-      .allocation-details {
-        padding: 1rem 1.5rem;
-        font-size: 1rem;
-        font-weight: 500;
-        margin: 12px 2rem;
-        align-items: center !important;
-      }
-
-      .allocation-details .row > div {
-        padding: 0.5rem;
-      }
-
-      .allocation-details strong {
-        font-weight: 700;
-        margin-right: 0.5rem;
-      }
-
-      /* Styling for hall number box */
-      .hall-number-box {
-        border: 2px solid black;
-        padding: 0px;
-        font-weight: 700;
-        display: inline-block;
-        border-radius: 10px;
-        width: 90px;
-      }
-
-      /* Allocation table container padding */
-      .allocation-table-container {
-        padding: 0 1.5rem 1.5rem;
-      }
-
-      /* Allocation table basic styling */
-      .allocation-table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      .allocation-table th,
-      .allocation-table td {
-        border: 2px solid black;
-        padding: 5px;
-        text-align: left;
-      }
-
-      .allocation-table th {
-        font-weight: 700;
-      }
-
-      .allocation-table tr:last-child {
-        font-weight: bold;
-      }
-
-      /* Specific inline styles converted into classes */
-      .font-bold {
-        font-weight: bold;
-      }
-
-      .text-uppercase {
-        text-transform: uppercase;
-      }
-
-      .font-size-1-3rem {
-        font-size: 1.3rem;
-      }
-
-      .px-md-5 {
-        padding-left: 3rem;
-        padding-right: 3rem;
-      }
-
-      .px-3 {
-        padding-left: 1rem;
-        padding-right: 1rem;
-      }
-
-      .pt-2 {
-        padding-top: 0.5rem;
-      }
-
-      /* Flexbox layout for allocation details */
-      .allocation-details .d-flex {
-        display: flex;
-        justify-content: space-between;
-      }
-      .leaders{
-        font-size: 32px !important;
-        margin-top: 10px !important;
-      }
-    </style>
-  `;
-
-        // Write the content into the print window
+      @page { size: A5 landscape; margin: 0; }
+      body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; }
+      .results-section, .row, [class^="col-"], [class*=" col-"] { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      .allocation-card { margin: 0 !important; padding: 0 !important; break-inside: avoid; break-after: page; page-break-inside: avoid; page-break-after: always; border: none; }
+      .allocation-card:last-of-type { break-after: auto; page-break-after: auto; }
+      .allocation-header-image { display: block; width: 100% !important; height: 20vh !important; margin: 0 !important; }
+      .allocation-details { padding: 1rem 1.5rem; font-size: 1rem; font-weight: 500; margin: 12px 2rem; align-items: center !important; }
+      .hall-number-box { border: 2px solid black; padding: 0px; font-weight: 700; display: inline-block; border-radius: 10px; width: 90px; }
+      .allocation-table-container { padding: 0 1.5rem 1.5rem; }
+      .allocation-table { width: 100%; border-collapse: collapse; }
+      .allocation-table th, .allocation-table td { border: 2px solid black; padding: 5px; text-align: left; }
+      .allocation-table th { font-weight: 700; }
+      .allocation-details .d-flex { display: flex; justify-content: space-between; }
+      .leaders{ font-size: 32px !important; margin-top: 10px !important; }
+    </style>`;
         printWindow.document.write(
           `<html><head><title>${esc(meta.campus || "Campus")} - ${esc(
             meta.shift?.name || "Shift"
@@ -470,11 +354,9 @@ $(function () {
         );
         printWindow.document.write(
           document.getElementById("resultsSection").innerHTML
-        ); // Assuming #resultsSection has your report
+        );
         printWindow.document.write("</body></html>");
         printWindow.document.close();
-
-        // Wait for the content to load and trigger print
         printWindow.onload = function () {
           printWindow.print();
         };
