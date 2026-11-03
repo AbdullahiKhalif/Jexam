@@ -134,7 +134,7 @@ function normalize_subject($name){
 /* ============= CIT-by-class-code helpers ============= */
 function is_cit_by_classcode(string $code): bool {
   $t = strtoupper(trim($code));
-  return preg_match('/^(CA|CNS|CM)\d{2}/', $t) === 1; // extend if you add more prefixes
+  return preg_match('/^(AI|CA|CNS|CM)\d{2}/', $t) === 1; // extend if you add more prefixes
 }
 
 /* DB fallback: does a CIT-class event exist for this subj+date in this year+sem (any term)? */
@@ -144,7 +144,7 @@ function exists_cit_event_db(mysqli $c,int $year,int $sem,string $subject_name,s
         JOIN subject s ON s.id=ev.subject_id
         JOIN class c   ON c.id=ev.class_id
         WHERE ev.academic_year_id=? AND ev.semester_id=? AND ev.exam_date=?
-          AND s.subject_name=? AND c.code REGEXP '^(CA|CNS|CM)'
+          AND s.subject_name=? AND c.code REGEXP '^(AI|CA|CNS|CM)'
         LIMIT 1";
   if(!$st=$c->prepare($sql)) return false;
   $st->bind_param("iiss",$year,$sem,$exam_date,$subject_name);
@@ -506,7 +506,7 @@ if ($action==='upload'){
           AND ev.academic_year_id = ?
           AND ev.semester_id      = ?
           AND ev.exam_date        = ?
-          AND NOT (c.code REGEXP '^(CA|CNS|CM)')
+          AND NOT (c.code REGEXP '^(AI|CA|CNS|CM)')
       ";
       if (!$st = $conn->prepare($sql)) {
         throw new Exception('prepare(post-pass generalize) failed: '.$conn->error);
