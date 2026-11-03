@@ -22,7 +22,7 @@ function any_active(array $files, string $current): bool {
 }
 
 /* 🔒 Hard redirect for non–SUPPER-ADMIN if they type restricted URLs */
-$setupFiles = ['users.php','academic.php','semesters.php','terms.php','campuses.php','shifts.php','departments.php'];
+$setupFiles = ['users.php','classes.php','exam_events.php','academic.php','semesters.php','terms.php','campuses.php','shifts.php','departments.php'];
 $upFiles    = ['upload.php','allocations_upload.php','upload_periodic.php','subject_upload.php'];
 $restricted = array_map('strtolower', array_merge($setupFiles, $upFiles));
 
@@ -74,7 +74,7 @@ if (!$isSuperAdmin && in_array($current, $restricted, true)) {
             <?php if ($isSuperAdmin): ?>
               <!-- Academic Setup (SUPPER-ADMIN only) -->
               <?php
-              $setupFiles = ['users.php','academic.php','semesters.php','terms.php','campuses.php','shifts.php','departments.php'];
+              $setupFiles = ['users.php','classes.php','exam_events.php','academic.php','semesters.php','terms.php','campuses.php','shifts.php','departments.php'];
               $setupOpen  = any_active($setupFiles, $current) ? 'show' : '';
               ?>
               <li class="sidebar-item">
@@ -111,6 +111,16 @@ if (!$isSuperAdmin && in_array($current, $restricted, true)) {
                   <li class="sidebar-item <?= is_active('departments.php',$current) ?>">
                     <a class="sidebar-link" href="../views/departments.php">
                       <i class="fa-solid fa-sitemap me-2"></i> Departments &amp; Rules
+                    </a>
+                  </li>
+                  <li class="sidebar-item <?= is_active('classes.php',$current) ?>">
+                    <a class="sidebar-link" href="../views/classes.php">
+                      <i class="fa-solid fa-graduation-cap me-2"></i> Classes
+                    </a>
+                  </li>
+                  <li class="sidebar-item <?= is_active('exam_events.php',$current) ?>">
+                    <a class="sidebar-link" href="../views/exam_events.php">
+                      <i class="fa-solid fa-calendar-check me-2"></i> Exam Events
                     </a>
                   </li>
                   <li class="sidebar-item <?= is_active('users.php',$current) ?>">

@@ -47,11 +47,29 @@ function updateUser($conn){
   echo json_encode(["status"=>$ok?true:false, "data"=>$ok?"Updated":"$conn->error"]);
 }
 
+
 function toggleActive($conn){
   extract($_POST); // id, is_active
   $id=(int)$id; $is_active=(int)$is_active;
   $ok = $conn->query("UPDATE users SET is_active=$is_active WHERE id=$id");
   echo json_encode(["status"=>$ok?true:false, "data"=>$ok?"Toggled":"$conn->error"]);
+}
+
+function deleteUser($conn){
+  $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+  if ($id <= 0) { echo json_encode(["status"=>false, "data"=>"Invalid user id"]); return; }
+  
+  $st = $conn->prepare("DELETE FROM users WHERE id = ?");
+  if (!$st) { echo json_encode(["status"=>false, "data"=>"Prepare failed"]); return; }
+  $st->bind_param("i", $id);
+  $ok = $st->execute();
+  
+  if ($ok) {
+    echo json_encode(["status"=>true, "data"=>"User deleted successfully"]);
+  } else {
+    // If foreign key constraints fail, handle gracefully
+    echo json_encode(["status"=>false, "data"=>"Cannot delete user (likely tied to other records)"]);
+  }
 }
 
 /* ========= Hardened (same behavior & params): admin resets someone else ========= */

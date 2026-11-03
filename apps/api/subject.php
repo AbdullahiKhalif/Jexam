@@ -26,7 +26,7 @@ if ($action === 'list') {
   if ($term_id !== null && $term_id !== '') { $where[]="(s.term_id          IS NULL OR s.term_id=?)";           $types.='i'; $vals[]=(int)$term_id; }
 
   $wsql = $where ? ('WHERE '.implode(' AND ', $where)) : '';
-  $sql = "SELECT s.id, s.name, s.level, s.department_id, d.name AS department,
+  $sql = "SELECT s.id, s.subject_name AS name, s.level, s.department_id, d.name AS department,
                  s.academic_year_id, s.semester_id, s.term_id,
                  s.default_exam_date,
                  ay.name AS year_name, se.name AS semester_name, te.name AS term_name
@@ -36,7 +36,7 @@ if ($action === 'list') {
           LEFT JOIN semester se ON se.id=s.semester_id
           LEFT JOIN term te ON te.id=s.term_id
           $wsql
-          ORDER BY s.name";
+          ORDER BY s.subject_name";
   if ($wsql) {
     $stmt = $conn->prepare($sql);
     $stmt->bind_param($types, ...$vals);
@@ -63,12 +63,12 @@ if ($action === 'create') {
   $default_exam_date = nvl($_POST['default_exam_date'] ?? null);
 
   // uniqueness per year (if you applied unique(name, academic_year_id))
-  $stmt = $conn->prepare("SELECT COUNT(*) AS c FROM subject WHERE name=? AND (academic_year_id <=> ?)");
+  $stmt = $conn->prepare("SELECT COUNT(*) AS c FROM subject WHERE subject_name=? AND (academic_year_id <=> ?)");
   $stmt->bind_param("si", $name, $year_id);
   $stmt->execute(); $r=$stmt->get_result()->fetch_assoc();
   if(($r['c']??0)>0) jsonOut(false,"Subject name already exists for this Academic Year");
 
-  $sql="INSERT INTO subject(name,department_id,level,academic_year_id,semester_id,term_id,default_exam_date,is_active)
+  $sql="INSERT INTO subject(subject_name,department_id,level,academic_year_id,semester_id,term_id,default_exam_date,is_active)
         VALUES(?,?,?,?,?,?,?,1)";
   $stmt=$conn->prepare($sql);
   $stmt->bind_param("sisiiis", $name, $department_id, $level, $year_id, $sem_id, $term_id, $default_exam_date);
@@ -91,12 +91,12 @@ if ($action === 'update') {
   $term_id = nvl($_POST['term_id'] ?? null);
   $default_exam_date = nvl($_POST['default_exam_date'] ?? null);
 
-  $stmt = $conn->prepare("SELECT COUNT(*) AS c FROM subject WHERE name=? AND (academic_year_id <=> ?) AND id<>?");
+  $stmt = $conn->prepare("SELECT COUNT(*) AS c FROM subject WHERE subject_name=? AND (academic_year_id <=> ?) AND id<>?");
   $stmt->bind_param("sii", $name, $year_id, $id);
   $stmt->execute(); $r=$stmt->get_result()->fetch_assoc();
   if(($r['c']??0)>0) jsonOut(false,"Subject name already exists for this Academic Year");
 
-  $sql="UPDATE subject SET name=?, level=?, department_id=?, academic_year_id=?, semester_id=?, term_id=?, default_exam_date=? WHERE id=?";
+  $sql="UPDATE subject SET subject_name=?, level=?, department_id=?, academic_year_id=?, semester_id=?, term_id=?, default_exam_date=? WHERE id=?";
   $stmt=$conn->prepare($sql);
   $stmt->bind_param("ssiiiisi", $name, $level, $department_id, $year_id, $sem_id, $term_id, $default_exam_date, $id);
   if($stmt->execute()) jsonOut(true,"Updated");

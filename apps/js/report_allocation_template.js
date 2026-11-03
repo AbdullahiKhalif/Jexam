@@ -317,7 +317,7 @@ $(function () {
           </table>
 
           <div class="leaders mt-3">
-            <h1 class="text-center fs-2" style="font-size: 20px; margin-top: 10px;">Contact Exam Officers: ${
+            <h1 class="text-center fs-2" style="font-size: 20px; margin-top: 10px;"><i class="fas fa-phone"></i> Call Center: ${
               meta.campus_leaders || "Campus"
             }</h1>
           </div>

@@ -50,7 +50,10 @@ $(function () {
           }'><i class='fa fa-edit fs-4 bg-primary text-light p-2 rounded'></i></a>
 <a class='reset_pw' data-id='${
             u.id
-          }'><i class='fa fa-key bg-warning fs-4 p-2 text-light'></i></a>
+          }'><i class='fa fa-key bg-warning fs-4 p-2 text-light rounded'></i></a>
+<a class='del_user' data-id='${
+            u.id
+          }'><i class='fa fa-trash bg-danger fs-4 p-2 text-light rounded'></i></a>
 </td></tr>`;
         });
         $("#usersTable tbody").html(tr);
@@ -96,6 +99,24 @@ $(function () {
       "../api/users.php",
       { action: "resetPassword", id, new_password: np },
       () => alert("Password updated"),
+      "json"
+    );
+  });
+
+  $("#usersTable").on("click", ".del_user", function () {
+    const id = $(this).data("id");
+    if (!confirm("Are you sure you want to delete this user?")) return;
+    $.post(
+      "../api/users.php",
+      { action: "deleteUser", id },
+      function (r) {
+        if (r.status) {
+          alert("User deleted");
+          loadData();
+        } else {
+          alert("Error: " + r.data);
+        }
+      },
       "json"
     );
   });
